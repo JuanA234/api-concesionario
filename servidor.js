@@ -4,20 +4,13 @@
 
 import Express from "express";
 import { MongoClient, ObjectId } from "mongodb";
+import { conectarBD, getDB } from "./db/db.js";
 import Cors from "cors";
 import dotenv from "dotenv";
 
 dotenv.config({path:'./.env'});
 
-const stringbaseDeDatos = process.env.DATABASE_URL;
 
-
-const client = new MongoClient(stringbaseDeDatos, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-});
-
-let baseDeDatos;
 
 const app = Express();
 app.use(Express.json());
@@ -25,6 +18,7 @@ app.use(Cors());
 
 app.get('/vehiculos', (req, res) => {
     console.log("Alguien hizo get en la ruta /vehiculos");
+    const baseDeDatos = getDB();
     baseDeDatos
         .collection('vehiculo')
         .find({})
@@ -110,19 +104,10 @@ app.delete('/vehiculos/eliminar', (req, res) => {
             });
 });
 
-const main = () => {
-
-    client.connect((err, db) => {
-        if (err) {
-            console.error("Error conectando a la base de datos");
-            return "Error";
-        }
-        baseDeDatos = db.db('vehiculos');
-        console.log('conexión exitosa');
-        return app.listen(process.env.PORT, () => {
-            console.log(`Escuchando puerto ${process.env.PORT}`);
-        });
+const main = () => {    
+    return app.listen(process.env.PORT, () => {
+        console.log(`Escuchando puerto ${process.env.PORT}`);
     });
 };
 
-main();
+conectarBD(main);
